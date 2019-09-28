@@ -65,9 +65,18 @@ public class Board {
 		}
 		
 		
-		int col = BackTrackAI(AI, 0);
-		
+		int col = BackTrackAI(AI, 0, -1, -1);
+		// COMPARE ALGORITHMS
+		/** 
+		int callAmt  = this.calls;
+		int col2 = BackTrackAI(AI, 0);
+		if(col == col2){
+			System.out.println("Equal " + col + " saved calls " + (calls - callAmt));
+		} else {
+			System.out.println(col + " : " + col2 + " NOT EQUAL");
+		}
 		// DEBUG INFO
+		/**
 		if(col != -1)
 		if(checkWin(col, lowest[col], AI)){
 			System.out.print("Winning "+ col);
@@ -75,7 +84,7 @@ public class Board {
 			System.out.print("Here works " + col);
 		}
 		System.out.println(" Calls " + calls);
-		
+		/**/
 		//No good moves; play to not lose
 		if(col == -1){
 			for( col = 0; col < 7; col++){
@@ -141,6 +150,46 @@ public class Board {
 				pieces[col][row] = player;
 				
 				int blockVal = BackTrackAI((player + 1) % 2, depth + 1);
+				
+				//remove piece
+				lowest[col] --;
+				pieces[col][row] = EMPTY;
+				
+				if(blockVal == -1) //next player has no good moves
+					return col;
+			}
+		}
+		return -1; //game can find no winning moves for this piece
+	}
+	
+	private int BackTrackAI(int player, final int depth, final int col0, final int col1){
+		if(piecesPlayed + depth == 42 || depth == MAXDEPTH) //end case
+			return -1;
+		
+		
+		calls++;
+		//find places where a piece will win
+		int win = -1;
+		if(piecesPlayed + depth >= 6)
+			win = findWin(player);
+		
+		if(win != -1)
+			return win;
+		
+		//same path avoidance
+		boolean avoid = col1 != -1 && col0 != col1;
+		
+		//Second find moves where the opponent will lose
+		for(int idx = 0; idx < 7; idx++){
+			int col = BIAS[idx]; //centre the first check
+			//Avoid certain nodes to only transverse once
+			if((!avoid || (col >= col0 || col == col1)) && isOpen(col)){
+				//play the piece
+				int row = lowest[col]++;
+				pieces[col][row] = player;
+				
+				int blockVal = BackTrackAI((player + 1) % 2, depth + 1, 
+						avoid ? -1 : col1, avoid ? -1 : col); //if avoiding reset the path avoidance
 				
 				//remove piece
 				lowest[col] --;

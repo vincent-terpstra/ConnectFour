@@ -81,7 +81,7 @@ public class ConnectFour extends Application {
 		/**
 		 * TEST AIvAI
 		 *
-		 *
+		 */
 		int start = 0;
 		while(indicator.isVisible()){
 			int plr = start ++ % 2;
